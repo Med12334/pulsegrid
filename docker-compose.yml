@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: pulsegrid-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: ./services/gateway-node
+    container_name: pulsegrid-gateway
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  analytics:
+    build:
+      context: ./services/analytics-python
+    container_name: pulsegrid-analytics
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  dispatch:
+    build:
+      context: ./services/dispatch-go
+    container_name: pulsegrid-dispatch
+    env_file:
+      - .env
+    restart: unless-stopped

@@ -1,0 +1,41 @@
+name: PulseGrid CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Build Node Gateway
+        run: |
+          cd services/gateway-node
+          npm install
+          npx tsc --noEmit
+
+      - name: Verify Go Engine
+        run: |
+          cd services/dispatch-go
+          go vet ./...
+          go build -o /dev/null main.go
